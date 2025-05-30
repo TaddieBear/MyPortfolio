@@ -66,7 +66,7 @@ const contactInfo = [
   {
     icon: MapPin,
     label: "Location",
-    value: "Your City, Country",
+    value: "Baao, Camarines Sur, Philippines",
     href: "#",
   },
 ]
