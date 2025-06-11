@@ -72,6 +72,14 @@ const skillsByCategory = {
   ],
 }
 
+type Skill = {
+  name: string
+  icon: string
+  level: number
+}
+
+type SkillCategory = keyof typeof skillsByCategory
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -98,8 +106,8 @@ const skillVariants = {
 }
 
 export default function About() {
-  const [activeCategory, setActiveCategory] = useState("Frontend")
-  const categories = Object.keys(skillsByCategory)
+  const [activeCategory, setActiveCategory] = useState<SkillCategory>("Frontend")
+  const categories = Object.keys(skillsByCategory) as SkillCategory[]
 
   return (
     <section
@@ -395,7 +403,7 @@ export default function About() {
             viewport={{ once: true }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"
           >
-            {skillsByCategory[activeCategory].map((skill, index) => (
+            {skillsByCategory[activeCategory].map((skill: Skill, index) => (
               <motion.div
                 key={skill.name}
                 variants={skillVariants}
@@ -406,7 +414,7 @@ export default function About() {
                 }}
                 className="group relative"
               >
-                <div className="relative backdrop-blur-xl bg-white/20 dark:bg-black/20 border border-gray-200/30 dark:border-gray-700/30 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-black/30">
+                <div className="relative backdrop-blur-xl bg-white/20 dark:bg-white/10 border border-gray-200/30 dark:border-gray-700/30 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/30 dark:hover:bg-black/30">
                   {/* Skill Icon and Name */}
                   <div className="flex items-center gap-4 mb-4">
                     <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/20 dark:bg-white/10 p-1.5">
