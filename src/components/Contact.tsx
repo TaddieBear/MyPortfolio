@@ -135,6 +135,20 @@ interface NotificationProps {
   onClose: () => void
 }
 
+interface FormData {
+  name: string
+  email: string
+  subject: string
+  message: string
+}
+
+interface ContactModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (formData: FormData) => Promise<void>
+  isSubmitting: boolean
+}
+
 const ModernNotification: React.FC<NotificationProps> = ({ type, message, isVisible, onClose }) => {
   useEffect(() => {
     if (isVisible) {
@@ -238,15 +252,8 @@ const ModernNotification: React.FC<NotificationProps> = ({ type, message, isVisi
   )
 }
 
-interface ContactModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (formData: any) => Promise<void>
-  isSubmitting: boolean
-}
-
 const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     subject: "",
@@ -444,7 +451,7 @@ export default function Contact() {
     setNotification((prev) => ({ ...prev, isVisible: false }))
   }
 
-  const handleFormSubmit = async (formData: any) => {
+  const handleFormSubmit = async (formData: FormData) => {
     setIsSubmitting(true)
 
     try {
