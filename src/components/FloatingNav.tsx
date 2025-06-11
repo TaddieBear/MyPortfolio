@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Home, User, Code, Mail } from "lucide-react"
+import { Home, User, Code, Mail, Menu, X } from "lucide-react"
 import Link from "next/link"
 
 const navItems = [
@@ -12,17 +12,13 @@ const navItems = [
   { icon: Mail, href: "#contact", label: "Contact" },
 ]
 
-export default function FloatingDock() {
+export default function FloatingNav() {
+  const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [isMobile, setIsMobile] = useState(false)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
 
     const sectionIds = navItems.map((item) => item.href.replace("#", ""))
 
@@ -41,169 +37,192 @@ export default function FloatingDock() {
     handleScroll()
 
     return () => {
-      window.removeEventListener("resize", checkMobile)
       window.removeEventListener("scroll", handleScroll)
     }
   }, [])
 
   if (!mounted) return null
 
+  const toggleMenu = () => {
+    setIsOpen(!isOpen)
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`fixed z-50 ${
-        isMobile ? "bottom-8 left-1/2 -translate-x-1/2 flex-row" : "right-8 top-1/2 -translate-y-1/2 flex-col"
-      } flex items-center`}
-    >
-      {/* Enhanced Dock Container */}
-      <motion.div
-        className={`relative ${
-          isMobile ? "flex-row px-4 py-3" : "flex-col py-4 px-3"
-        } flex items-center gap-3 backdrop-blur-2xl bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl shadow-black/10`}
-        style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-        }}
-      >
-        {/* Animated Background Indicator */}
-        <motion.div
-          layoutId="dock-indicator"
-          className="absolute w-12 h-12 bg-gradient-to-br from-emerald-400/30 to-teal-500/30 rounded-xl blur-sm"
-          initial={false}
-          animate={isMobile ? { x: activeIndex * 56 + 8 } : { y: activeIndex * 56 + 8 }}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        />
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Navigation Items */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute bottom-20 right-0 flex flex-col-reverse gap-3"
+          >
+            {navItems.map((item, index) => {
+              const Icon = item.icon
+              const isActive = index === activeIndex
+              const delay = (navItems.length - index - 1) * 0.05
 
-        {/* Navigation Items */}
-        {navItems.map((item, index) => {
-          const Icon = item.icon
-          const isActive = index === activeIndex
-          const isHovered = hoveredIndex === index
-
-          return (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1, duration: 0.3 }}
-              className="relative"
-            >
-              <Link
-                href={item.href}
-                onClick={() => setActiveIndex(index)}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                className="relative group block"
-              >
+              return (
                 <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  animate={isActive ? { scale: 1.05 } : { scale: 1 }}
-                  className={`relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                    isActive
-                      ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25"
-                      : isHovered
-                        ? "bg-white/20 dark:bg-white/10 shadow-md"
-                        : "bg-white/10 dark:bg-white/5"
-                  } border ${
-                    isActive ? "border-emerald-400/50" : "border-white/10 dark:border-white/5"
-                  } backdrop-blur-sm`}
+                  key={index}
+                  initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: delay,
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25,
+                  }}
+                  className="relative group"
                 >
-                  <Icon
-                    className={`transition-all duration-300 ${
-                      isActive
-                        ? "text-white"
-                        : isHovered
-                          ? "text-gray-800 dark:text-white"
-                          : "text-gray-600 dark:text-gray-400"
-                    }`}
-                    size={20}
-                  />
-
-                  {/* Active State Glow */}
-                  {isActive && (
+                  <Link
+                    href={item.href}
+                    onClick={() => {
+                      setActiveIndex(index)
+                      setIsOpen(false)
+                    }}
+                    className="block"
+                  >
                     <motion.div
-                      layoutId="active-glow"
-                      className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 opacity-20 blur-md"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.2, 0.4, 0.2],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  )}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-xl border shadow-lg ${
+                        isActive
+                          ? "bg-black/80 dark:bg-white/80 border-gray-800/50 dark:border-gray-200/50 shadow-black/20 dark:shadow-white/20"
+                          : "bg-white/20 dark:bg-black/20 border-gray-200/30 dark:border-gray-700/30 hover:bg-white/30 dark:hover:bg-black/30 shadow-gray-500/20"
+                      }`}
+                    >
+                      <Icon
+                        className={`transition-all duration-300 ${
+                          isActive ? "text-white dark:text-black" : "text-gray-700 dark:text-gray-300"
+                        }`}
+                        size={18}
+                      />
 
-                  {/* Hover Ripple Effect */}
-                  {isHovered && !isActive && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0.5 }}
-                      animate={{ scale: 1.5, opacity: 0 }}
-                      transition={{ duration: 0.6 }}
-                      className="absolute inset-0 rounded-xl bg-white/20 dark:bg-white/10"
-                    />
-                  )}
-                </motion.div>
+                      {/* Active State Glow */}
+                      {isActive && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full bg-black/20 dark:bg-white/20 blur-md"
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [0.3, 0.6, 0.3],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                        />
+                      )}
+                    </motion.div>
 
-                {/* Enhanced Tooltip */}
-                <AnimatePresence>
-                  {!isMobile && isHovered && (
+                    {/* Tooltip */}
                     <motion.div
                       initial={{ opacity: 0, x: 10, scale: 0.9 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: 10, scale: 0.9 }}
+                      whileHover={{ opacity: 1, x: 0, scale: 1 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-1/2 -translate-y-1/2 right-full mr-4 px-3 py-2 text-sm font-medium rounded-lg backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-white border border-white/20 dark:border-white/10 shadow-xl whitespace-nowrap"
+                      className="absolute top-1/2 -translate-y-1/2 right-full mr-3 px-3 py-2 text-sm font-medium rounded-lg backdrop-blur-xl bg-white/90 dark:bg-black/90 text-gray-900 dark:text-white border border-gray-200/30 dark:border-gray-700/30 shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none"
                     >
                       {item.label}
 
                       {/* Tooltip Arrow */}
-                      <div className="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-l-4 border-l-white/90 dark:border-l-gray-900/90 border-y-4 border-y-transparent" />
+                      <div className="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-l-4 border-l-white/90 dark:border-l-black/90 border-y-4 border-y-transparent" />
                     </motion.div>
-                  )}
-                </AnimatePresence>
-              </Link>
-            </motion.div>
-          )
-        })}
+                  </Link>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Decorative Elements */}
+      {/* Main Toggle Button */}
+      <motion.button
+        onClick={toggleMenu}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full backdrop-blur-xl bg-white/20 dark:bg-black/20 border border-gray-200/30 dark:border-gray-700/30 shadow-2xl shadow-gray-500/20 flex items-center justify-center group overflow-hidden"
+      >
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-gray-100/10 dark:from-black/10 dark:to-gray-900/10 rounded-full" />
+
+        {/* Icon Container */}
+        <div className="relative z-10">
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X className="text-gray-700 dark:text-gray-300" size={20} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="menu"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Menu className="text-gray-700 dark:text-gray-300" size={20} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Hover Ripple Effect */}
+        <motion.div
+          className="absolute inset-0 rounded-full bg-white/10 dark:bg-black/10 opacity-0 group-hover:opacity-100"
+          animate={isOpen ? { scale: [1, 1.1, 1] } : {}}
+          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+        />
+
+        {/* Active State Ring */}
+        {isOpen && (
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1.2, opacity: 0.3 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className="absolute inset-0 rounded-full border-2 border-gray-600 dark:border-gray-400"
+          />
+        )}
+
+        {/* Floating Particles */}
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full opacity-60"
+          className="absolute -top-1 -right-1 w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full opacity-60"
         />
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-full opacity-40"
+          className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-gray-500 dark:bg-gray-500 rounded-full opacity-40"
         />
-      </motion.div>
+      </motion.button>
 
-      {/* Mobile Active Indicator */}
-      {isMobile && (
-        <motion.div
-          className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          {navItems.map((_, index) => (
-            <motion.div
-              key={index}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                index === activeIndex ? "bg-emerald-500 scale-125" : "bg-white/30 dark:bg-white/20"
-              }`}
-              animate={index === activeIndex ? { scale: [1, 1.3, 1] } : {}}
-              transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
-            />
-          ))}
-        </motion.div>
-      )}
-    </motion.div>
+      {/* Background Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/5 dark:bg-white/5 backdrop-blur-sm -z-10"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
